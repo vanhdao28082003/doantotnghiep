@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container"> <!-- Header -->
+        <header class="header">
+            <div class="logo"> <i class="fas fa-parking"></i>
+                <h1>Hệ thống nhận diện và quản lý bãi đỗ xe thông minh</h1>
+            </div>
+            <div class="system-status">
+                <div class="status-item online"> <i class="fas fa-circle"></i> <span>Hệ thống trực tuyến</span> </div>
+                <div class="status-item" id="parkingCount"> <i class="fas fa-car"></i> <span>0/60 Số xe đã đỗ</span> </div>
+            </div>
+        </header> <!-- Main Content -->
+        <div class="main-content"> <!-- Left Panel - Image Processing -->
+            <div class="left-panel"> <!-- Upload Section -->
+                <div class="card upload-section">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> Chọn hình ảnh</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon"> <i class="fas fa-car-side"></i> </div>
+                        <p class="upload-text">Kéo, thả hoặc chọn vào upload ảnh</p>
+                        <p class="upload-subtext">Hỗ trợ: JPG, PNG, JPEG (Tối đa 16MB)</p> <input type="file"
+                            id="fileInput" accept="image/*" hidden> <button class="btn btn-primary"
+                            onclick="document.getElementById('fileInput').click()"> <i class="fas fa-folder-open"></i>
+                            Upload  </button>
+                    </div>
+                    <div class="image-preview" id="imagePreview"> <img id="previewImage" alt="Preview">
+                        <div class="no-preview" id="noPreview"> <i class="fas fa-image"></i>
+                            <p>Ảnh xe hiển thị ở đây</p>
+                        </div>
+                    </div> <button class="btn btn-process" id="processBtn" disabled> <i class="fas fa-play"></i> Thực hiện nhận 
+                            </button>
+                </div> <!-- Results Section -->
+                <div class="card results-section">
+                    <h2><i class="fas fa-chart-bar"></i> Kết quả nhận </h2>
+                    <div class="results-grid">
+                        <div class="result-category">
+                            <h3><i class="fas fa-car"></i> Thông tin phương tiện </h3>
+                            <div class="result-row"> <span class="result-label">Hãng (Trước khi chuẩn hóa):</span> <span
+                                    class="result-value" id="brandBefore">-</span> </div>
+                            <div class="result-row highlight"> <span class="result-label">Hãng (Sau khi chuẩn hóa):</span> <span
+                                    class="result-value" id="brandAfter">-</span> </div>
+                            <div class="result-row"> <span class="result-label">Tên xe (Trước khi chuẩn hóa):</span> <span
+                                    class="result-value" id="modelBefore">-</span> </div>
+                            <div class="result-row highlight"> <span class="result-label">Tên xe (Sau khi chuẩn )):</span> <span
+                                    class="result-value" id="modelAfter">-</span> </div>
+                        </div>
+                        <div class="result-category">
+                            <h3><i class="fas fa-weight-hanging"></i> Thông tin cân nặng và vị trí đậu</h3>
+                            <div class="result-row weight"> <span class="result-label">Cân nặng:</span> <span
+                                    class="result-value" id="vehicleWeight">- kg</span> </div>
+                            <div class="result-row floor"> <span class="result-label">Tầng:</span> <span
+                                    class="result-value" id="parkingFloor">-</span> </div>
+                            <div class="result-row slot success"> <span class="result-label">Vị trí:</span> <span
+                                    class="result-value" id="parkingSlot">-</span> </div>
+                            <div class="result-row"> <span class="result-label">ID:</span> <span
+                                    class="result-value" id="licensePlate">-</span> </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons"> <button class="btn btn-success" id="confirmBtn" disabled> <i
+                                class="fas fa-check"></i> Xác nhận đã đỗ lại </button> <button class="btn btn-danger"
+                            id="exitBtn" disabled> <i class="fas fa-sign-out-alt"></i> Phương tiện rời đi </button> </div>
+                </div>
+            </div> <!-- Right Panel - Parking Status -->
+            <div class="right-panel"> <!-- Parking Overview -->
+                <div class="card status-card">
+                    <h2><i class="fas fa-map-marker-alt"></i> Trạng thái bãi </h2>
+                    <div class="floors-container"> <!-- Floor 1 -->
+                        <div class="floor-card floor1">
+                            <div class="floor-header">
+                                <h3>Tầng 1</h3> <span class="floor-badge">≤ 1000kg</span>
+                            </div>
+                            <div class="floor-stats">
+                                <div class="stat">
+                                    <div class="stat-number" id="floor1Occupied">0</div>
+                                    <div class="stat-label">Số xe đã đậu</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number" id="floor1Available">20</div>
+                                    <div class="stat-label">Số vị trí trống</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number">20</div>
+                                    <div class="stat-label">Tổng</div>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="floor1Progress"></div>
+                                </div>
+                                <div class="progress-text" id="floor1Percent">0%</div>
+                            </div>
+                        </div> <!-- Floor 2 -->
+                        <div class="floor-card floor2">
+                            <div class="floor-header">
+                                <h3>Tầng 2</h3> <span class="floor-badge">1000-2000kg</span>
+                            </div>
+                            <div class="floor-stats">
+                                <div class="stat">
+                                    <div class="stat-number" id="floor2Occupied">0</div>
+                                    <div class="stat-label">Số xe đã đậu</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number" id="floor2Available">20</div>
+                                    <div class="stat-label">Số vị trí trống</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number">20</div>
+                                    <div class="stat-label">Tổng</div>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="floor2Progress"></div>
+                                </div>
+                                <div class="progress-text" id="floor2Percent">0%</div>
+                            </div>
+                        </div> <!-- Floor 3 -->
+                        <div class="floor-card floor3">
+                            <div class="floor-header">
+                                <h3>Tầng 3</h3> <span class="floor-badge">≥ 2000kg</span>
+                            </div>
+                            <div class="floor-stats">
+                                <div class="stat">
+                                    <div class="stat-number" id="floor3Occupied">0</div>
+                                    <div class="stat-label">Số xe đã đậu</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number" id="floor3Available">20</div>
+                                    <div class="stat-label">Số vị trí trống</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-number">20</div>
+                                    <div class="stat-label">Tổng</div>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="floor3Progress"></div>
+                                </div>
+                                <div class="progress-text" id="floor3Percent">0%</div>
+                            </div>
+                        </div>
+                    </div> <!-- Floor Details -->
+                    <div class="floor-details">
+                        <div class="tabs"> <button class="tab-btn active" data-floor="1">Tầng 1</button> <button
+                                class="tab-btn" data-floor="2">Tầng 2</button> <button class="tab-btn"
+                                data-floor="3">Tầng 3</button> </div>
+                        <div class="tab-content active" id="tab1">
+                            <div class="slots-grid" id="slotsFloor1"> <!-- Will be populated by JS --> </div>
+                        </div>
+                        <div class="tab-content" id="tab2">
+                            <div class="slots-grid" id="slotsFloor2"> <!-- Will be populated by JS --> </div>
+                        </div>
+                        <div class="tab-content" id="tab3">
+                            <div class="slots-grid" id="slotsFloor3"> <!-- Will be populated by JS --> </div>
+                        </div>
+                    </div>
+                </div> <!-- Recent Activity -->
+                <div class="card recent-card">
+                    <h2><i class="fas fa-history"></i> Các xe đã đỗ </h2>
+                    <div class="recent-list" id="recentList">
+                        <div class="empty-state"> <i class="fas fa-car"></i>
+                            <p>Trống</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Management Controls -->
+                <div class="card management-card">
+                    <h2><i class="fas fa-cogs"></i> Hệ thống quản lý</h2>
+                
+                    <div class="management-buttons">
+                        <!-- Xóa lịch sử -->
+                        <button class="btn btn-warning" id="clearHistoryBtn">
+                            <i class="fas fa-trash-alt"></i> Xóa lịch sử
+                        </button>
+                
+                        <!-- Reset hệ thống -->
+                        <button class="btn btn-danger" id="resetSystemBtn">
+                            <i class="fas fa-redo"></i> Khởi động lại tất cả
+                        </button>
+                
+                        <!-- Export dữ liệu -->
+                        <button class="btn btn-info" id="exportDataBtn">
+                            <i class="fas fa-download"></i> Tải về dữ liệu
+                        </button>
+                
+                        <!-- Xem tất cả xe -->
+                        <button class="btn btn-secondary" id="viewAllVehiclesBtn">
+                            <i class="fas fa-list"></i> Xem thông tin phương tiện
+                        </button>
+                    </div>
+                
+                    <!-- Statistics -->
+                    <div class="system-stats">
+                        <h3><i class="fas fa-chart-pie"></i> Thống kê</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Tổng</span>
+                                <span class="stat-value" id="totalProcessed">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Hiện tại</span>
+                                <span class="stat-value" id="currentParked">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Khả dụng </span>
+                                <span class="stat-value" id="availableSlots">60</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Hôm nay</span>
+                                <span class="stat-value" id="todayEntries">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- Footer -->
+        <footer class="footer">
+            <p>Bãi đỗ xe thông minh v1.0 | Copyright: </p>
+            <p class="tech-stack">Powered by: YOLOv8 • OCRTran • Fuzzy Matching • Flask</p>
+        </footer>
+    </div> <!-- JavaScript -->
+    <script src="/static/js/script.js"></script>
+    <div class="modal" id="confirmationModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="modalTitle">Xác nhận</h3>
+            <p id="modalMessage">Bạn có muốn thực hiện hành động này ?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modalCancelBtn">Thoát</button>
+                <button class="btn btn-danger" id="modalConfirmBtn">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for Vehicle Details -->
+    <div class="modal" id="vehicleDetailsModal">
+        <div class="modal-content large-modal">
+            <span class="close-modal">&times;</span>
+            <h3>Thông tin chi tiết phương tiện</h3>
+            <div class="vehicle-details-content" id="vehicleDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="deleteVehicleBtn">
+                    <i class="fas fa-trash"></i> Xóa phương tiện
+                </button>
+                <button class="btn btn-secondary" id="closeDetailsBtn">Đóng</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for All Vehicles List -->
+    <div class="modal" id="allVehiclesModal">
+        <div class="modal-content xlarge-modal">
+            <span class="close-modal">&times;</span>
+            <h3>Tất cả phương tiện</h3>
+            <div class="vehicles-list" id="allVehiclesList">
+                <!-- List will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="closeAllVehiclesBtn">Đóng</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
